@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layer1 Blockchain Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #fff;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-family: monospace;
+        }
+
+        .error {
+            color: #ff6b6b;
+        }
+
+        .success {
+            color: #2ed573;
+        }
+
+        .info {
+            color: #70a1ff;
+        }
+
+        .network-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .network-info h4 {
+            margin-bottom: 0.5rem;
+        }
+
+        .network-info p {
+            margin: 0.25rem 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Layer1 Blockchain</h1>
+            <p>Zero-Cost Ethereum-Compatible Blockchain</p>
+        </div>
+
+        <div class="network-info">
+            <h4>Network Information</h4>
+            <p><strong>Network:</strong> Local Hardhat Network</p>
+            <p><strong>Chain ID:</strong> 1337</p>
+            <p><strong>RPC URL:</strong> http://127.0.0.1:8545</p>
+            <p><strong>Status:</strong> <span id="networkStatus">Connecting...</span></p>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h3>🔗 Connect Wallet</h3>
+                <button id="connectBtn" class="btn">Connect MetaMask</button>
+                <div id="walletInfo" class="status" style="display: none;">
+                    <p><strong>Address:</strong> <span id="walletAddress"></span></p>
+                    <p><strong>Balance:</strong> <span id="walletBalance"></span> ETH</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🪙 Token Information</h3>
+                <div id="tokenInfo" class="status">
+                    <p><strong>Name:</strong> <span id="tokenName">-</span></p>
+                    <p><strong>Symbol:</strong> <span id="tokenSymbol">-</span></p>
+                    <p><strong>Total Supply:</strong> <span id="tokenSupply">-</span></p>
+                    <p><strong>Your Balance:</strong> <span id="tokenBalance">-</span></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💸 Transfer Tokens</h3>
+                <div class="form-group">
+                    <label for="recipient">Recipient Address:</label>
+                    <input type="text" id="recipient" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount:</label>
+                    <input type="number" id="amount" placeholder="100">
+                </div>
+                <button id="transferBtn" class="btn" disabled>Transfer</button>
+                <div id="transferStatus" class="status" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Blockchain Stats</h3>
+                <div id="blockchainStats" class="status">
+                    <p><strong>Block Number:</strong> <span id="blockNumber">-</span></p>
+                    <p><strong>Gas Price:</strong> <span id="gasPrice">-</span> Gwei</p>
+                    <p><strong>Network Hash Rate:</strong> <span id="hashRate">-</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script>
+        // Global variables
+        let provider;
+        let signer;
+        let tokenContract;
+        let userAddress;
+
+        // Contract ABI (simplified)
+        const tokenABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)",
+            "function decimals() view returns (uint8)",
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function transfer(address to, uint256 amount) returns (bool)",
+            "function transferFrom(address from, address to, uint256 amount) returns (bool)",
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "event Transfer(address indexed from, address indexed to, uint256 value)",
+            "event Approval(address indexed owner, address indexed spender, uint256 value)"
+        ];
+
+        // Initialize
+        async function init() {
+            try {
+                // Check if MetaMask is installed
+                if (typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    document.getElementById('networkStatus').textContent = 'MetaMask Detected';
+                    document.getElementById('networkStatus').className = 'success';
+                } else {
+                    provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+                    document.getElementById('networkStatus').textContent = 'Local Network';
+                    document.getElementById('networkStatus').className = 'info';
+                }
+
+                // Load token contract (you'll need to deploy first)
+                const tokenAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // Replace with deployed address
+                tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+
+                // Load token info
+                await loadTokenInfo();
+                await loadBlockchainStats();
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('networkStatus').textContent = 'Connection Failed';
+                document.getElementById('networkStatus').className = 'error';
+            }
+        }
+
+        // Load token information
+        async function loadTokenInfo() {
+            try {
+                const name = await tokenContract.name();
+                const symbol = await tokenContract.symbol();
+                const totalSupply = await tokenContract.totalSupply();
+                
+                document.getElementById('tokenName').textContent = name;
+                document.getElementById('tokenSymbol').textContent = symbol;
+                document.getElementById('tokenSupply').textContent = ethers.utils.formatEther(totalSupply);
+                
+                if (userAddress) {
+                    const balance = await tokenContract.balanceOf(userAddress);
+                    document.getElementById('tokenBalance').textContent = ethers.utils.formatEther(balance);
+                }
+            } catch (error) {
+                console.error('Error loading token info:', error);
+            }
+        }
+
+        // Load blockchain statistics
+        async function loadBlockchainStats() {
+            try {
+                const blockNumber = await provider.getBlockNumber();
+                const gasPrice = await provider.getGasPrice();
+                
+                document.getElementById('blockNumber').textContent = blockNumber;
+                document.getElementById('gasPrice').textContent = ethers.utils.formatUnits(gasPrice, 'gwei');
+                document.getElementById('hashRate').textContent = 'Local Network';
+            } catch (error) {
+                console.error('Error loading blockchain stats:', error);
+            }
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    signer = provider.getSigner();
+                    userAddress = await signer.getAddress();
+                    
+                    const balance = await provider.getBalance(userAddress);
+                    
+                    document.getElementById('walletAddress').textContent = userAddress;
+                    document.getElementById('walletBalance').textContent = ethers.utils.formatEther(balance);
+                    document.getElementById('walletInfo').style.display = 'block';
+                    document.getElementById('connectBtn').textContent = 'Connected';
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('transferBtn').disabled = false;
+                    
+                    // Update token balance
+                    await loadTokenInfo();
+                } else {
+                    alert('MetaMask is not installed!');
+                }
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                alert('Failed to connect wallet');
+            }
+        }
+
+        // Transfer tokens
+        async function transferTokens() {
+            try {
+                const recipient = document.getElementById('recipient').value;
+                const amount = document.getElementById('amount').value;
+                
+                if (!recipient || !amount) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                const tokenAmount = ethers.utils.parseEther(amount);
+                const tx = await tokenContract.connect(signer).transfer(recipient, tokenAmount);
+                
+                document.getElementById('transferStatus').style.display = 'block';
+                document.getElementById('transferStatus').textContent = `Transaction sent: ${tx.hash}`;
+                document.getElementById('transferStatus').className = 'info';
+                
+                await tx.wait();
+                
+                document.getElementById('transferStatus').textContent = `Transfer successful!`;
+                document.getElementById('transferStatus').className = 'success';
+                
+                // Refresh balances
+                await loadTokenInfo();
+                
+            } catch (error) {
+                console.error('Transfer error:', error);
+                document.getElementById('transferStatus').style.display = 'block';
+                document.getElementById('transferStatus').textContent = `Transfer failed: ${error.message}`;
+                document.getElementById('transferStatus').className = 'error';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('connectBtn').addEventListener('click', connectWallet);
+        document.getElementById('transferBtn').addEventListener('click', transferTokens);
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
